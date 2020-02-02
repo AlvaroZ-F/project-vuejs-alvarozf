@@ -1,6 +1,11 @@
 <template>
     <div class="container">
-        <input type="text" class="task-manager-input" placeholder="What needs to be done" v-model="newTask" @keyup.enter="addTask">
+        <!-- ADD TASK INPUT -->
+        <input type="text" class="form-control task-manager-input" 
+               placeholder="What needs to be done" 
+               v-model="newTask" 
+               @keyup.enter="addTask" />
+        <!-- END OF INPUT -->
 
         <div class="extra-container">
             <div class="pretty p-switch p-fill">
@@ -12,6 +17,7 @@
             <div class="label">{{ remaining }} items left</div>
         </div>
 
+        <!-- FILTERS ALL/ACTIVE/COMPLETED -->
         <div class="extra-container">
             <div>
                 <button class="btn" :class="{ active: filter == 'all' }" @click="filter = 'all'">All</button>
@@ -25,14 +31,41 @@
                 </transition>
             </div>
         </div>
+        <!-- END FILTERS -->
 
-        <transition-group tag="div" name="fade" enter-active-class="animatedfadeInUp" leave-active-class="animated fadeOutDown">
+        <!-- SEARCH INPUT CONTAINER. HIDDEN BY DEFAULT-->
+        <div class="search-container">
+            <button type="button" class="btn btn-hidden-search"
+                    @click="searchIsHidden = !searchIsHidden">
+                Search
+            </button>
+            <transition name="fade">
+                <input v-if="!searchIsHidden" type="text"
+                       class="form-control task-manager-search"
+                       placeholder="Filter my tasks..."
+                       v-model="searchword" />
+            </transition>
+        </div>
+        <!-- END SEARCH INPUT CONTAINER-->
+        <transition-group tag="div" name="fade"
+                          enter-active-class="animatedfadeInUp"
+                          leave-active-class="animated fadeOutDown">
+            <!-- TASK CONTAINER -->
             <task-item v-for="(task, index) in tasksFiltered"
                        :key="task.id"
                        :task="task"
                        :index="index"
-                       :checkAll="!anyRemaining" @removedTask="removeTask" @finishedEdit="finishedEdit"></task-item>
+                       :checkAll="!anyRemaining" @removedTask="removeTask"
+                       @finishedEdit="finishedEdit">
+            </task-item>
+            <!-- END OF TASK CONTAINER -->
         </transition-group>
+        <footer>
+            <div class="footer-copyright text-center text-grey-50 py-3">
+                @ 2020 Alvaro Zambrana Fernandez -
+                <a class="dark-grey-text" href="https://github.com/AlvaroZ-F/project-vuejs-alvarozf.git">Github</a>
+            </div>
+        </footer>
     </div>
 </template>
 
@@ -48,34 +81,15 @@
 
         data () {
             return {
+                searchword: '',
                 newTask: '',
-                idForTask: 4,
+                idForTask: 1,
                 beforeEditCache: '',
+                searchIsHidden: true,
                 filter: 'all',
-                tasks: [
-                    {
-                        'id': 1,
-                        'title': 'Finish Vue Project',
-                        'completed': true,
-                        'editing': false,
-                        'filterPriority': 'high',
-                    },
-                    {
-                        'id': 2,
-                        'title': 'Study Node',
-                        'completed': false,
-                        'editing': false,
-                        'filterPriority': 'normal',
-                    },
-                    {
-                        'id': 3,
-                        'title': 'Study Angular',
-                        'completed': false,
-                        'editing': false,
-                        'filterPriority': 'normal',
-                    },
-                ]
-            }
+
+                tasks: []
+            };
         },
 
         watch: {
@@ -96,19 +110,38 @@
                 return this.remaining != 0
             },
             tasksFiltered() {
-                if (this.filter == 'all') {
-                    return this.tasks
-                } else if (this.filter == 'active') {
-                    return this.tasks.filter(task => !task.completed)
-                } else if (this.filter == 'completed') {
-                    return this.tasks.filter(task => task.completed)
+                if (!this.searchIsHidden) {
+                    if (this.filter == 'all') {
+                        return this.tasks.filter(task => {
+                            return task.title.toLowerCase().includes(this.searchword.toLowerCase())
+                        });
+                    } else if (this.filter == 'active') {
+                        return this.tasks.filter(task => {
+                            if (!task.completed && task.title.toLowerCase().includes(this.searchword.toLowerCase())) {
+                                return true;
+                            }
+                        });
+                    } else if (this.filter == 'completed') {
+                        return this.tasks.filter(task => {
+                            if (task.completed && task.title.toLowerCase().includes(this.searchword.toLowerCase())) {
+                                return true;
+                            }
+                        });
+                    }
+                } else {
+                    if (this.filter == 'all') {
+                        return this.tasks
+                    } else if (this.filter == 'active') {
+                        return this.tasks.filter(task => !task.completed)
+                    } else if (this.filter == 'completed') {
+                        return this.tasks.filter(task => task.completed)
+                    }
                 }
-
                 return this.tasks
             },
             showClearCompletedButton() {
                 return this.tasks.filter(task => task.completed).length > 0
-            }
+            },
         },
 
         methods: {
@@ -174,6 +207,17 @@
         }
     }
 
+    .task-manager-search {
+        width: 80%;
+        padding: 10px 16px;
+        font-size: 16px;
+        margin-top: 6px;
+        margin-left: 14px;
+        &:focus {
+            outline: 0;
+        }
+    }
+
     .task-item {
         display: flex;
         align-items: center;
@@ -231,6 +275,14 @@
         margin-bottom: 14px;
     }
 
+    .search-container {
+        display: flex;
+        border-top: 1px solid lightgrey;
+        padding-top: 14px;
+        padding-bottom: 10px;
+        border-bottom: 1px solid lightgrey;
+    }
+
     button {
         font-size: 14px;
         background-color: white;
@@ -260,6 +312,13 @@
 
     .btn-clearCompleted {
         width: 100px;
+    }
+
+    .btn-hidden-search {
+        width: 60px;
+        height: 40px;
+        font-size: 14px;
+        background: #666;
     }
 
     .custom-checkbox {

@@ -33,9 +33,16 @@
                 <div class="col">
                     <div>
                         <label class="priority-label">Priority: </label>
-                        <button class="priority-high btn" :class="{ active: filterPriority == 'high' }" @click="filterPriority = 'high'">High</button>
-                        <button class="priority-normal btn" :class="{ active: filterPriority == 'normal' }" @click="filterPriority = 'normal'">Normal</button>
-                        <button class="priority-low btn" :class="{ active: filterPriority == 'low' }" @click="filterPriority = 'low'">Low</button>
+                        <button class="priority-high btn" 
+                                :class="{ active: filterPriority == 'high' }" 
+                                @click="filterPriority = 'high'">High</button>
+                        <button class="priority-normal btn" 
+                                :class="{ active: filterPriority == 'normal' }" 
+                                @click="filterPriority = 'normal'">Normal</button>
+                        <button class="priority-low btn" 
+                                :class="{ active: filterPriority == 'low' }" 
+                                @click="filterPriority = 'low'">Low</button>
+                        <vue-moments-ago prefix="posted" suffix="ago" date="creationDate" lang="en"></vue-moments-ago>
                     </div>
                 </div>
             </div>
@@ -43,10 +50,14 @@
     </div>
 </template>
 
-<script>
+<script>    
+    import VueMomentsAgo from 'vue-moments-ago'
 
     export default {
         name: 'task-item',
+        components: {            
+            VueMomentsAgo,
+        },
         props: {
             task: {
                 type: Object,
@@ -70,6 +81,7 @@
                 'editing': this.task.editing,
                 'filterPriority': this.task.filterPriority,
                 'beforeEditCache': '',
+                'creationDate': new Date(),
             }            
         },
 
