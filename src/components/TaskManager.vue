@@ -61,7 +61,7 @@
             <!-- END OF TASK CONTAINER -->
         </transition-group>
         <footer>
-            <div class="footer-copyright text-center text-grey-50 py-3">
+            <div class="custom-footer footer-copyright text-center text-grey-50 py-3">
                 @ 2020 Alvaro Zambrana Fernandez -
                 <a class="dark-grey-text" href="https://github.com/AlvaroZ-F/project-vuejs-alvarozf.git">Github</a>
             </div>
@@ -380,8 +380,16 @@
         opacity: 0;
     }
 
-    .priority-label{
+    .priority-label {
         font-size: 14px;
         padding: 4px;
+    }
+
+    .custom-footer {
+        font-size: 15px;
+        color: #808080;
+        a {
+            color: #BBB;
+        }
     }
 </style>
