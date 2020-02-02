@@ -17,10 +17,8 @@ export default new Vuex.Store({
                 .then(response => {
                     state.weather = response.data.data[0];
                     state.dataIsReceived = true;
-                    console.log(response);
                 })
                 .catch(error => {
-                    console.log("There was an error: ", error.response);
                     state.dataIsReceived = false;
                 }
             );
