@@ -1,32 +1,38 @@
 <template>
-    <div>
+    <div class="container">
         <input type="text" class="task-manager-input" placeholder="What needs to be done" v-model="newTask" @keyup.enter="addTask">
-        <transition-group tag="div" name="fade" enter-active-class="animatedfadeInUp" leave-active-class="animated fadeOutDown">
-            <task-item v-for="(task, index) in tasksFiltered" 
-                :key="task.id" 
-                :task="task" 
-                :index="index"
-                :checkAll="!anyRemaining" @removedTask="removeTask" @finishedEdit="finishedEdit"></task-item>
-        </transition-group>
 
         <div class="extra-container">
-            <div><label><input type="checkbox" :checked="!anyRemaining" @change="checkAllTasks">Check All</label></div>
-            <div>{{ remaining }} items left</div>
+            <div class="pretty p-switch p-fill">
+                <input type="checkbox" :checked="!anyRemaining" @change="checkAllTasks">
+                <div class="state label">
+                    <label>Check All</label>
+                </div>
+            </div>
+            <div class="label">{{ remaining }} items left</div>
         </div>
 
         <div class="extra-container">
             <div>
-                <button :class="{ active: filter == 'all' }" @click="filter = 'all'">All</button>
-                <button :class="{ active: filter == 'active' }" @click="filter = 'active'">Active</button>
-                <button :class="{ active: filter == 'completed' }" @click="filter = 'completed'">Completed</button>
+                <button class="btn" :class="{ active: filter == 'all' }" @click="filter = 'all'">All</button>
+                <button class="btn" :class="{ active: filter == 'active' }" @click="filter = 'active'">Active</button>
+                <button class="btn btn-completed" :class="{ active: filter == 'completed' }" @click="filter = 'completed'">Completed</button>
             </div>
 
             <div>
                 <transition name="fade">
-                    <button v-if="showClearCompletedButton" @click="clearCompleted">Clear Completed</button>
+                    <button class="btn btn-clearCompleted" v-if="showClearCompletedButton" @click="clearCompleted">Clear Completed</button>
                 </transition>
             </div>
         </div>
+
+        <transition-group tag="div" name="fade" enter-active-class="animatedfadeInUp" leave-active-class="animated fadeOutDown">
+            <task-item v-for="(task, index) in tasksFiltered"
+                       :key="task.id"
+                       :task="task"
+                       :index="index"
+                       :checkAll="!anyRemaining" @removedTask="removeTask" @finishedEdit="finishedEdit"></task-item>
+        </transition-group>
     </div>
 </template>
 
@@ -43,27 +49,45 @@
         data () {
             return {
                 newTask: '',
-                idForTask: 3,
+                idForTask: 4,
                 beforeEditCache: '',
                 filter: 'all',
                 tasks: [
                     {
                         'id': 1,
-                        'title': 'Finish Vue Screencast',
+                        'title': 'Finish Vue Project',
+                        'completed': true,
+                        'editing': false,
+                        'filterPriority': 'high',
+                    },
+                    {
+                        'id': 2,
+                        'title': 'Study Node',
                         'completed': false,
                         'editing': false,
                         'filterPriority': 'normal',
                     },
                     {
-                        'id': 2,
-                        'title': 'Take over world',
+                        'id': 3,
+                        'title': 'Study Angular',
                         'completed': false,
                         'editing': false,
                         'filterPriority': 'normal',
-                    }
+                    },
                 ]
             }
         },
+
+        watch: {
+            tasks: {
+                handler() {
+                    console.log('Tasks changed!');
+                    localStorage.setItem('tasks', JSON.stringify(this.tasks));
+                },
+                deep: true,
+            },
+        },
+
         computed: {
             remaining() {
                 return this.tasks.filter(task => !task.completed).length
@@ -120,13 +144,24 @@
             finishedEdit(data) {
                 this.tasks.splice(data.index, 1, data.task)
             }
-        }
+        },
+
+        mounted() {
+            console.log('App mounted');
+            if (localStorage.getItem('tasks')) this.tasks = JSON.parse(localStorage.getItem('tasks'));
+        },
     };
 </script>
 
 
 <style lang="scss">
     @import url("https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.7.2/animate.min.css");
+    @import url("https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css");
+    @import url("https://cdn.jsdelivr.net/npm/pretty-checkbox@3.0/dist/pretty-checkbox.min.css");
+
+    body {
+        background-color: #111;
+    }
 
     .task-manager-input {
         width: 100%;
@@ -140,17 +175,20 @@
     }
 
     .task-item {
-        margin-bottom: 12px;
         display: flex;
         align-items: center;
         justify-content: space-between;
+        border: 1px solid #777;
+        background: #222;
+        color: #aaa;
     }
 
     .remove-item {
         cursor: pointer;
+        font-size: 50px;
         margin-left: 14px;
         &:hover {
-        color: black;
+        color: white;
         }
     }
 
@@ -160,13 +198,12 @@
     }
 
     .task-item-label {
-        padding: 10px;
-        border: 1px solid white;
-        margin-left: 12px;
+        padding-top: 10px;
+        margin-left: 6px;
     }
 
     .task-item-edit {
-        font-size: 24px;
+        font-size: 20px;
         color: #2c3e50;
         margin-left: 12px;
         width: 100%;
@@ -181,7 +218,7 @@
 
     .completed {
         text-decoration: line-through;
-        color: grey;
+        color: #5fe39f;
     }
 
     .extra-container {
@@ -198,18 +235,82 @@
         font-size: 14px;
         background-color: white;
         appearance: none;
-    
-        &:hover {
-            background: lightgreen;
-        }
+        border: 2px solid black;
 
         &:focus {
             outline: none;
         }
     }
 
+    .btn {
+        margin:5px;
+        background: #444;
+        color: #888;
+        padding: 0px;
+        height: 20px;
+        width: 40px;
+        font-size: 10px;
+        text-align: center;
+        font-weight: bold;
+
+        &.btn-completed {
+            width: 60px;
+        }
+    }
+
+    .btn-clearCompleted {
+        width: 100px;
+    }
+
+    .custom-checkbox {
+        margin-top: 10px;
+        margin-left: 20px;
+    }
+
+    .label {
+        color: #777;
+        font-weight: bold;
+    }
+
     .active {
         background: lightgreen;
+        &.priority-high{
+            color: white;
+            padding: 0px;
+            height: 20px;
+            width: 40px;
+            font-size: 10px;
+            text-align: center;
+            font-weight: bold;
+            background: #ed4545;
+        }
+        &.priority-normal {
+            color: white;
+            padding: 0px;
+            height: 20px;
+            width: 40px;
+            font-size: 10px;
+            text-align: center;
+            font-weight: bold;
+            background: #406cdb;
+        }
+
+        &.priority-low {
+            color: white;
+            padding: 0px;
+            height: 20px;
+            width: 40px;
+            font-size: 10px;
+            text-align: center;
+            font-weight: bold;
+            margin:5px;
+            background: #45d4ff;
+        }
+    }
+
+    .remove-item {
+        color: #ed4545;
+        margin-right: 10px;
     }
 
     .fade-enter-active, .fade-leave-active {
@@ -220,4 +321,8 @@
         opacity: 0;
     }
 
+    .priority-label{
+        font-size: 14px;
+        padding: 4px;
+    }
 </style>
